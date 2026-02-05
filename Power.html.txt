@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Closure Amusement</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #3498db;
+      color: #fff;
+    }
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #27ae60;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #1e8449;
+    }
+    .result {
+      margin-top: 20px;
+      background: #ecf0f1;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    .expenses, .date-section {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Monthly Closure Amusement</h1>
+
+    <div class="date-section">
+      <label>Select Date:</label>
+      <input type="date" id="closureDate" value="">
+    </div>
+
+    <h2>25% Each Table</h2>
+    <table id="table25">
+      <thead>
+        <tr>
+          <th>Store Name</th>
+          <th>Collection ($)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="addRow('table25')">Add Row to 25% Table</button>
+
+    <h2>20-30% Table</h2>
+    <table id="table20_30">
+      <thead>
+        <tr>
+          <th>Store Name</th>
+          <th>Collection ($)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="addRow('table20_30')">Add Row to 20-30% Table</button>
+
+    <h2>Expenses</h2>
+    <div class="expenses">
+      <label>Santosh Expenses ($):</label>
+      <input type="number" id="expenseSantosh" value="0">
+
+      <label>Atmaram Expenses ($):</label>
+      <input type="number" id="expenseAtmaram" value="0">
+
+      <label>Jaya Expenses ($):</label>
+      <input type="number" id="expenseJaya" value="0">
+
+      <label>Bijay Expenses ($):</label>
+      <input type="number" id="expenseBijay" value="0">
+    </div>
+
+    <button onclick="calculateTotals()">Calculate Totals</button>
+    <button onclick="downloadPDF()">Download PDF</button>
+
+    <div class="result" id="result" style="display:none;">
+      <h2>Final Totals</h2>
+      <p id="totalSantosh"></p>
+      <p id="totalAtmaram"></p>
+      <p id="totalJaya"></p>
+      <p id="totalBijay"></p>
+    </div>
+  </div>
+
+  <!-- jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    function addRow(tableId) {
+      const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+      const row = table.insertRow();
+      const cell1 = row.insertCell(0);
+      const cell2 = row.insertCell(1);
+      const cell3 = row.insertCell(2);
+
+      cell1.innerHTML = '<input type="text" placeholder="Store Name">';
+      cell2.innerHTML = '<input type="number" placeholder="Collection ($)" value="200">';
+      cell3.innerHTML = '<button onclick="deleteRow(this)">Delete</button>';
+    }
+
+    function deleteRow(btn) {
+      const row = btn.parentNode.parentNode;
+      row.parentNode.removeChild(row);
+    }
+
+    let totals = {}; // store last calculated totals
+
+    function calculateTotals() {
+      // Step 1: Read personal expenses
+      let santosh = parseFloat(document.getElementById('expenseSantosh').value) || 0;
+      let atmaram = parseFloat(document.getElementById('expenseAtmaram').value) || 0;
+      let jaya = parseFloat(document.getElementById('expenseJaya').value) || 0;
+      let bijay = parseFloat(document.getElementById('expenseBijay').value) || 0;
+
+      // Step 2: Sum collections
+      const table25 = document.getElementById('table25').getElementsByTagName('tbody')[0];
+      let total25 = 0;
+      for (let row of table25.rows) {
+        total25 += parseFloat(row.cells[1].getElementsByTagName('input')[0].value) || 0;
+      }
+
+      const table20_30 = document.getElementById('table20_30').getElementsByTagName('tbody')[0];
+      let total20_30 = 0;
+      for (let row of table20_30.rows) {
+        total20_30 += parseFloat(row.cells[1].getElementsByTagName('input')[0].value) || 0;
+      }
+
+      // Step 3: Distribute collections (after adding back expenses)
+      // 25% table
+      const share25Each = total25 * 0.25;
+      santosh += share25Each;
+      atmaram += share25Each;
+      jaya += share25Each;
+      bijay += share25Each;
+
+      // 20-30% table
+      santosh += total20_30 * 0.2;
+      atmaram += total20_30 * 0.2;
+      jaya += total20_30 * 0.3;
+      bijay += total20_30 * 0.3;
+
+      // Step 4: Show final totals
+      document.getElementById('totalSantosh').innerText = "Santosh Total: $" + santosh.toFixed(2);
+      document.getElementById('totalAtmaram').innerText = "Atmaram Total: $" + atmaram.toFixed(2);
+      document.getElementById('totalJaya').innerText = "Jaya Total: $" + jaya.toFixed(2);
+      document.getElementById('totalBijay').innerText = "Bijay Total: $" + bijay.toFixed(2);
+
+      document.getElementById('result').style.display = 'block';
+
+      // Store totals for PDF
+      totals = { santosh, atmaram, jaya, bijay, total25, total20_30 };
+    }
+
+    async function downloadPDF() {
+      if(Object.keys(totals).length === 0) {
+        alert("Please calculate totals first!");
+        return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Get date
+      const dateInput = document.getElementById('closureDate').value || new Date().toISOString().split('T')[0];
+
+      doc.setFontSize(18);
+      doc.text("Monthly Closure Amusement", 14, 20);
+      doc.setFontSize(12);
+      doc.text("Date: " + dateInput, 14, 30);
+
+      doc.text("Collection from 25% Table: $" + totals.total25.toFixed(2), 14, 40);
+      doc.text("Collection from 20-30% Table: $" + totals.total20_30.toFixed(2), 14, 47);
+
+      doc.text("Final Totals:", 14, 60);
+      doc.text("Santosh: $" + totals.santosh.toFixed(2), 14, 70);
+      doc.text("Atmaram: $" + totals.atmaram.toFixed(2), 14, 77);
+      doc.text("Jaya: $" + totals.jaya.toFixed(2), 14, 84);
+      doc.text("Bijay: $" + totals.bijay.toFixed(2), 14, 91);
+
+      doc.save("Monthly_Closure_" + dateInput + ".pdf");
+    }
+  </script>
+</body>
+</html>
