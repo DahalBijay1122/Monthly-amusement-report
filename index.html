@@ -68,102 +68,117 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 document.getElementById('closureDate').value = new Date().toISOString().split('T')[0];
-
 let totals = {};
 
-function addRow(tableId) {
-  const tbody = document.getElementById(tableId).querySelector('tbody');
-  const row = document.createElement('tr');
-
-  const cell1 = document.createElement('td');
-  const inputName = document.createElement('input'); inputName.type='text'; inputName.placeholder='Store Name';
+function addRow(tableId){
+  const tbody=document.getElementById(tableId).querySelector('tbody');
+  const row=document.createElement('tr');
+  const cell1=document.createElement('td');
+  const inputName=document.createElement('input'); inputName.type='text'; inputName.placeholder='Store Name';
   cell1.appendChild(inputName);
-
-  const cell2 = document.createElement('td');
-  const inputCollection = document.createElement('input'); inputCollection.type='number'; inputCollection.value=0;
+  const cell2=document.createElement('td');
+  const inputCollection=document.createElement('input'); inputCollection.type='number'; inputCollection.value=0;
   cell2.appendChild(inputCollection);
-
-  const cell3 = document.createElement('td');
-  const delBtn = document.createElement('button'); delBtn.innerText='Delete';
-  delBtn.addEventListener('click', ()=>row.remove());
+  const cell3=document.createElement('td');
+  const delBtn=document.createElement('button'); delBtn.innerText='Delete';
+  delBtn.addEventListener('click',()=>row.remove());
   cell3.appendChild(delBtn);
-
-  row.appendChild(cell1); row.appendChild(cell2); row.appendChild(cell3);
-  tbody.appendChild(row);
+  row.appendChild(cell1); row.appendChild(cell2); row.appendChild(cell3); tbody.appendChild(row);
 }
 
-document.getElementById('addRow25').addEventListener('click', ()=>addRow('table25'));
-document.getElementById('addRow20_30').addEventListener('click', ()=>addRow('table20_30'));
-document.getElementById('calcTotals').addEventListener('click', calculateTotals);
-document.getElementById('downloadPDF').addEventListener('click', downloadPDF);
+document.getElementById('addRow25').addEventListener('click',()=>addRow('table25'));
+document.getElementById('addRow20_30').addEventListener('click',()=>addRow('table20_30'));
+document.getElementById('calcTotals').addEventListener('click',calculateTotals);
+document.getElementById('downloadPDF').addEventListener('click',downloadPDF);
 
-function calculateTotals() {
-  let expenses = {
-    santosh: parseFloat(document.getElementById('expenseSantosh').value)||0,
-    atmaram: parseFloat(document.getElementById('expenseAtmaram').value)||0,
-    jaya: parseFloat(document.getElementById('expenseJaya').value)||0,
-    bijay: parseFloat(document.getElementById('expenseBijay').value)||0
+function getTableData(tableId){
+  const data=[];
+  const tbody=document.getElementById(tableId).querySelector('tbody');
+  tbody.querySelectorAll('tr').forEach(r=>{
+    const name=r.cells[0].querySelector('input').value||'';
+    const col=parseFloat(r.cells[1].querySelector('input').value)||0;
+    data.push({name,col});
+  });
+  return data;
+}
+
+function calculateTotals(){
+  const expenses={
+    santosh:parseFloat(document.getElementById('expenseSantosh').value)||0,
+    atmaram:parseFloat(document.getElementById('expenseAtmaram').value)||0,
+    jaya:parseFloat(document.getElementById('expenseJaya').value)||0,
+    bijay:parseFloat(document.getElementById('expenseBijay').value)||0
   };
 
-  function sumTable(tableId) {
-    let total=0;
-    const tbody = document.getElementById(tableId).querySelector('tbody');
-    tbody.querySelectorAll('tr').forEach(row => { total += parseFloat(row.cells[1].querySelector('input').value)||0; });
-    return total;
-  }
+  const table25Data=getTableData('table25');
+  const table20_30Data=getTableData('table20_30');
 
-  let table25 = sumTable('table25');
-  let table20_30 = sumTable('table20_30');
+  let table25=table25Data.reduce((a,b)=>a+b.col,0);
+  let table20_30=table20_30Data.reduce((a,b)=>a+b.col,0);
 
-  // --- Expense deduction from tables in order ---
-  function deductExpense(amount) {
+  function deductExpense(amount){
     if(amount===0) return 0;
     if(table25>=amount){ table25-=amount; return 0; }
-    else { let remaining=amount-table25; table25=0; if(table20_30>=remaining){ table20_30-=remaining; return 0; } else { remaining-=table20_30; table20_30=0; return remaining; } }
+    else{ let remaining=amount-table25; table25=0; if(table20_30>=remaining){ table20_30-=remaining; return 0; } else{ remaining-=table20_30; table20_30=0; return remaining; } }
   }
 
-  // Deduct each expense
-  let leftoverSantosh = deductExpense(expenses.santosh);
-  let leftoverAtmaram = deductExpense(expenses.atmaram);
-  let leftoverJaya = deductExpense(expenses.jaya);
-  let leftoverBijay = deductExpense(expenses.bijay);
+  deductExpense(expenses.santosh);
+  deductExpense(expenses.atmaram);
+  deductExpense(expenses.jaya);
+  deductExpense(expenses.bijay);
 
-  // --- Distribute remaining collections ---
-  // Table1 shares 25% each
-  let table1Shares = { santosh: table25*0.25, atmaram: table25*0.25, jaya: table25*0.25, bijay: table25*0.25 };
-  // Table2 shares 20-30%
-  let table2Shares = { santosh: table20_30*0.2, atmaram: table20_30*0.2, jaya: table20_30*0.3, bijay: table20_30*0.3 };
+  let table1Shares={santosh:table25*0.25, atmaram:table25*0.25, jaya:table25*0.25, bijay:table25*0.25};
+  let table2Shares={santosh:table20_30*0.2, atmaram:table20_30*0.2, jaya:table20_30*0.3, bijay:table20_30*0.3};
 
-  let santosh = table1Shares.santosh + table2Shares.santosh + expenses.santosh;
-  let atmaram = table1Shares.atmaram + table2Shares.atmaram + expenses.atmaram;
-  let jaya = table1Shares.jaya + table2Shares.jaya + expenses.jaya;
-  let bijay = table1Shares.bijay + table2Shares.bijay + expenses.bijay;
+  const santosh=table1Shares.santosh+table2Shares.santosh+expenses.santosh;
+  const atmaram=table1Shares.atmaram+table2Shares.atmaram+expenses.atmaram;
+  const jaya=table1Shares.jaya+table2Shares.jaya+expenses.jaya;
+  const bijay=table1Shares.bijay+table2Shares.bijay+expenses.bijay;
 
-  document.getElementById('totalSantosh').innerText = "Santosh Total: $" + santosh.toFixed(2);
-  document.getElementById('totalAtmaram').innerText = "Atmaram Total: $" + atmaram.toFixed(2);
-  document.getElementById('totalJaya').innerText = "Jaya Total: $" + jaya.toFixed(2);
-  document.getElementById('totalBijay').innerText = "Bijay Total: $" + bijay.toFixed(2);
+  document.getElementById('totalSantosh').innerText="Santosh Total: $"+santosh.toFixed(2);
+  document.getElementById('totalAtmaram').innerText="Atmaram Total: $"+atmaram.toFixed(2);
+  document.getElementById('totalJaya').innerText="Jaya Total: $"+jaya.toFixed(2);
+  document.getElementById('totalBijay').innerText="Bijay Total: $"+bijay.toFixed(2);
 
   document.getElementById('result').style.display='block';
 
-  totals={santosh, atmaram, jaya, bijay, table25, table20_30, expenses};
+  totals={santosh,atmaram,jaya,bijay,table25Data,table20_30Data,expenses};
 }
 
-function downloadPDF() {
+function downloadPDF(){
   if(Object.keys(totals).length===0){ alert("Please calculate totals first!"); return; }
   const { jsPDF }=window.jspdf;
   const doc=new jsPDF();
   const dateInput=document.getElementById('closureDate').value;
 
-  doc.setFontSize(18); doc.text("Monthly Closure Amusement",14,20);
-  doc.setFontSize(12); doc.text("Date: "+dateInput,14,30);
-  doc.text("Collection from 25% Table: $"+totals.table25.toFixed(2),14,40);
-  doc.text("Collection from 20-30% Table: $"+totals.table20_30.toFixed(2),14,47);
-  doc.text("Final Totals (after Expenses):",14,60);
-  doc.text("Santosh: $"+totals.santosh.toFixed(2)+" (Expenses: $"+totals.expenses.santosh.toFixed(2)+")",14,70);
-  doc.text("Atmaram: $"+totals.atmaram.toFixed(2)+" (Expenses: $"+totals.expenses.atmaram.toFixed(2)+")",14,77);
-  doc.text("Jaya: $"+totals.jaya.toFixed(2)+" (Expenses: $"+totals.expenses.jaya.toFixed(2)+")",14,84);
-  doc.text("Bijay: $"+totals.bijay.toFixed(2)+" (Expenses: $"+totals.expenses.bijay.toFixed(2)+")",14,91);
+  doc.setFontSize(16); doc.text("Monthly Closure Amusement",14,14);
+  doc.setFontSize(12); doc.text("Date: "+dateInput,14,22);
+
+  let y=30;
+  function addTable(title,data){
+    doc.setFontSize(13); doc.text(title,14,y); y+=6;
+    doc.setFontSize(12);
+    doc.text("Store Name",14,y); doc.text("Collection ($)",80,y); y+=5;
+    data.forEach(d=>{ doc.text(d.name,14,y); doc.text(d.col.toFixed(2),80,y); y+=5; });
+    y+=5;
+  }
+
+  addTable("25% Table",totals.table25Data);
+  addTable("20-30% Table",totals.table20_30Data);
+
+  y+=5; doc.setFontSize(13); doc.text("Expenses:",14,y); y+=6;
+  doc.setFontSize(12);
+  doc.text("Santosh: $"+totals.expenses.santosh.toFixed(2),14,y); y+=5;
+  doc.text("Atmaram: $"+totals.expenses.atmaram.toFixed(2),14,y); y+=5;
+  doc.text("Jaya: $"+totals.expenses.jaya.toFixed(2),14,y); y+=5;
+  doc.text("Bijay: $"+totals.expenses.bijay.toFixed(2),14,y); y+=8;
+
+  doc.setFontSize(13); doc.text("Final Amounts:",14,y); y+=6;
+  doc.setFontSize(12);
+  doc.text("Santosh: $"+totals.santosh.toFixed(2),14,y); y+=5;
+  doc.text("Atmaram: $"+totals.atmaram.toFixed(2),14,y); y+=5;
+  doc.text("Jaya: $"+totals.jaya.toFixed(2),14,y); y+=5;
+  doc.text("Bijay: $"+totals.bijay.toFixed(2),14,y); y+=5;
 
   doc.save("Monthly_Closure_"+dateInput+".pdf");
 }
