@@ -1,231 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monthly Closure Amusement</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Machine Collection Tracker</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      padding: 20px;
-      color: #333;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
     }
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-    }
+
     .container {
-      max-width: 900px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        max-width: 1400px;
+        margin: auto;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
     }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
+
+    .top-section {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
     }
-    th {
-      background: #3498db;
-      color: #fff;
+
+    label {
+        font-weight: bold;
     }
-    input[type="text"], input[type="number"], input[type="date"] {
-      width: 100%;
-      padding: 6px;
-      box-sizing: border-box;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+
+    input[type="date"] {
+        padding: 8px;
     }
+
     button {
-      background: #27ae60;
-      color: #fff;
-      border: none;
-      padding: 10px 15px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
+        padding: 10px 15px;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
     }
-    button:hover {
-      background: #1e8449;
+
+    .add-btn {
+        background: #28a745;
+        color: white;
     }
-    .result {
-      margin-top: 20px;
-      background: #ecf0f1;
-      padding: 15px;
-      border-radius: 5px;
+
+    .download-btn {
+        background: #007bff;
+        color: white;
     }
-    .expenses, .date-section {
-      margin-top: 15px;
+
+    .delete-btn {
+        background: #dc3545;
+        color: white;
     }
-  </style>
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    th,
+    td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    th {
+        background: #efefef;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+        width: 100%;
+        padding: 6px;
+    }
+
+    .total-section {
+        margin-top: 20px;
+        background: white;
+        padding: 15px;
+        font-size: 22px;
+        font-weight: bold;
+        text-align: right;
+    }
+
+    @media (max-width: 900px) {
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>Monthly Closure Amusement</h1>
 
-    <div class="date-section">
-      <label>Select Date:</label>
-      <input type="date" id="closureDate" value="">
+<div class="container">
+
+    <h1>Machine Collection Tracker</h1>
+
+    <div class="top-section">
+        <label for="reportDate">Date:</label>
+        <input type="date" id="reportDate">
+
+        <button class="add-btn" onclick="addMachine()">
+            Add Machine
+        </button>
+
+        <button class="download-btn" onclick="downloadCSV()">
+            Download Report
+        </button>
     </div>
 
-    <h2>25% Each Table</h2>
-    <table id="table25">
-      <thead>
-        <tr>
-          <th>Store Name</th>
-          <th>Collection ($)</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
+    <table id="machineTable">
+        <thead>
+            <tr>
+                <th>Machine</th>
+                <th>Old Start</th>
+                <th>Old End</th>
+                <th>New Start</th>
+                <th>New End</th>
+                <th>Current Start</th>
+                <th>Current End</th>
+                <th>Collection</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="machineBody"></tbody>
     </table>
-    <button onclick="addRow('table25')">Add Row to 25% Table</button>
 
-    <h2>20-30% Table</h2>
-    <table id="table20_30">
-      <thead>
-        <tr>
-          <th>Store Name</th>
-          <th>Collection ($)</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button onclick="addRow('table20_30')">Add Row to 20-30% Table</button>
-
-    <h2>Expenses</h2>
-    <div class="expenses">
-      <label>Santosh Expenses ($):</label>
-      <input type="number" id="expenseSantosh" value="0">
-
-      <label>Atmaram Expenses ($):</label>
-      <input type="number" id="expenseAtmaram" value="0">
-
-      <label>Jaya Expenses ($):</label>
-      <input type="number" id="expenseJaya" value="0">
-
-      <label>Bijay Expenses ($):</label>
-      <input type="number" id="expenseBijay" value="0">
+    <div class="total-section">
+        Total Collection:
+        <span id="grandTotal">0</span>
     </div>
 
-    <button onclick="calculateTotals()">Calculate Totals</button>
-    <button onclick="downloadPDF()">Download PDF</button>
+</div>
 
-    <div class="result" id="result" style="display:none;">
-      <h2>Final Totals</h2>
-      <p id="totalSantosh"></p>
-      <p id="totalAtmaram"></p>
-      <p id="totalJaya"></p>
-      <p id="totalBijay"></p>
-    </div>
-  </div>
+<script>
+    let machineCounter = 0;
 
-  <!-- jsPDF library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    document.getElementById("reportDate").value =
+        new Date().toISOString().split("T")[0];
 
-  <script>
-    function addRow(tableId) {
-      const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
-      const row = table.insertRow();
-      const cell1 = row.insertCell(0);
-      const cell2 = row.insertCell(1);
-      const cell3 = row.insertCell(2);
+    function addMachine() {
 
-      cell1.innerHTML = '<input type="text" placeholder="Store Name">';
-      cell2.innerHTML = '<input type="number" placeholder="Collection ($)" value="200">';
-      cell3.innerHTML = '<button onclick="deleteRow(this)">Delete</button>';
+        machineCounter++;
+
+        const tbody = document.getElementById("machineBody");
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>
+                <input
+                    type="text"
+                    class="machine-name"
+                    value="Machine ${machineCounter}">
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="old-start calc"
+                    value="0">
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="old-end calc"
+                    value="0">
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="new-start calc"
+                    value="0">
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="new-end calc"
+                    value="0">
+            </td>
+
+            <td class="current-start">0</td>
+
+            <td class="current-end">0</td>
+
+            <td class="collection">0</td>
+
+            <td>
+                <button
+                    class="delete-btn"
+                    onclick="removeMachine(this)">
+                    Delete
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(row);
+
+        row.querySelectorAll(".calc").forEach(input => {
+            input.addEventListener("input", calculateAll);
+        });
+
+        calculateAll();
     }
 
-    function deleteRow(btn) {
-      const row = btn.parentNode.parentNode;
-      row.parentNode.removeChild(row);
+    function removeMachine(button) {
+        button.closest("tr").remove();
+        calculateAll();
     }
 
-    let totals = {}; // store last calculated totals
+    function calculateAll() {
 
-    function calculateTotals() {
-      // Step 1: Read personal expenses
-      let santosh = parseFloat(document.getElementById('expenseSantosh').value) || 0;
-      let atmaram = parseFloat(document.getElementById('expenseAtmaram').value) || 0;
-      let jaya = parseFloat(document.getElementById('expenseJaya').value) || 0;
-      let bijay = parseFloat(document.getElementById('expenseBijay').value) || 0;
+        let totalCollection = 0;
 
-      // Step 2: Sum collections
-      const table25 = document.getElementById('table25').getElementsByTagName('tbody')[0];
-      let total25 = 0;
-      for (let row of table25.rows) {
-        total25 += parseFloat(row.cells[1].getElementsByTagName('input')[0].value) || 0;
-      }
+        document
+            .querySelectorAll("#machineBody tr")
+            .forEach(row => {
 
-      const table20_30 = document.getElementById('table20_30').getElementsByTagName('tbody')[0];
-      let total20_30 = 0;
-      for (let row of table20_30.rows) {
-        total20_30 += parseFloat(row.cells[1].getElementsByTagName('input')[0].value) || 0;
-      }
+                const oldStart =
+                    Number(
+                        row.querySelector(".old-start").value
+                    ) || 0;
 
-      // Step 3: Distribute collections (after adding back expenses)
-      // 25% table
-      const share25Each = total25 * 0.25;
-      santosh += share25Each;
-      atmaram += share25Each;
-      jaya += share25Each;
-      bijay += share25Each;
+                const oldEnd =
+                    Number(
+                        row.querySelector(".old-end").value
+                    ) || 0;
 
-      // 20-30% table
-      santosh += total20_30 * 0.2;
-      atmaram += total20_30 * 0.2;
-      jaya += total20_30 * 0.3;
-      bijay += total20_30 * 0.3;
+                const newStart =
+                    Number(
+                        row.querySelector(".new-start").value
+                    ) || 0;
 
-      // Step 4: Show final totals
-      document.getElementById('totalSantosh').innerText = "Santosh Total: $" + santosh.toFixed(2);
-      document.getElementById('totalAtmaram').innerText = "Atmaram Total: $" + atmaram.toFixed(2);
-      document.getElementById('totalJaya').innerText = "Jaya Total: $" + jaya.toFixed(2);
-      document.getElementById('totalBijay').innerText = "Bijay Total: $" + bijay.toFixed(2);
+                const newEnd =
+                    Number(
+                        row.querySelector(".new-end").value
+                    ) || 0;
 
-      document.getElementById('result').style.display = 'block';
+                const currentStart =
+                    newStart - oldStart;
 
-      // Store totals for PDF
-      totals = { santosh, atmaram, jaya, bijay, total25, total20_30 };
+                const currentEnd =
+                    newEnd - oldEnd;
+
+                const collection =
+                    currentEnd - currentStart;
+
+                row.querySelector(".current-start")
+                    .textContent = currentStart;
+
+                row.querySelector(".current-end")
+                    .textContent = currentEnd;
+
+                row.querySelector(".collection")
+                    .textContent = collection;
+
+                totalCollection += collection;
+            });
+
+        document.getElementById("grandTotal")
+            .textContent = totalCollection;
     }
 
-    async function downloadPDF() {
-      if(Object.keys(totals).length === 0) {
-        alert("Please calculate totals first!");
-        return;
-      }
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      // Get date
-      const dateInput = document.getElementById('closureDate').value || new Date().toISOString().split('T')[0];
-
-      doc.setFontSize(18);
-      doc.text("Monthly Closure Amusement", 14, 20);
-      doc.setFontSize(12);
-      doc.text("Date: " + dateInput, 14, 30);
-
-      doc.text("Collection from 25% Table: $" + totals.total25.toFixed(2), 14, 40);
-      doc.text("Collection from 20-30% Table: $" + totals.total20_30.toFixed(2), 14, 47);
-
-      doc.text("Final Totals:", 14, 60);
-      doc.text("Santosh: $" + totals.santosh.toFixed(2), 14, 70);
-      doc.text("Atmaram: $" + totals.atmaram.toFixed(2), 14, 77);
-      doc.text("Jaya: $" + totals.jaya.toFixed(2), 14, 84);
-      doc.text("Bijay: $" + totals.bijay.toFixed(2), 14, 91);
-
-      doc.save("Monthly_Closure_" + dateInput + ".pdf");
+    function escapeCSV(value) {
+        return `"${String(value).replace(/"/g, '""')}"`;
     }
-  </script>
+
+    function downloadCSV() {
+
+        const reportDate =
+            document.getElementById("reportDate").value;
+
+        let rows = [];
+
+        rows.push([
+            "Date",
+            reportDate
+        ]);
+
+        rows.push([]);
+
+        rows.push([
+            "Machine",
+            "Old Start",
+            "Old End",
+            "New Start",
+            "New End",
+            "Current Start",
+            "Current End",
+            "Collection"
+        ]);
+
+        document
+            .querySelectorAll("#machineBody tr")
+            .forEach(row => {
+
+                rows.push([
+                    row.querySelector(".machine-name").value,
+                    row.querySelector(".old-start").value,
+                    row.querySelector(".old-end").value,
+                    row.querySelector(".new-start").value,
+                    row.querySelector(".new-end").value,
+                    row.querySelector(".current-start").textContent,
+                    row.querySelector(".current-end").textContent,
+                    row.querySelector(".collection").textContent
+                ]);
+            });
+
+        rows.push([]);
+
+        rows.push([
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Grand Total",
+            document.getElementById("grandTotal").textContent
+        ]);
+
+        const csvContent = rows
+            .map(row =>
+                row.map(escapeCSV).join(",")
+            )
+            .join("\n");
+
+        const blob = new Blob(
+            [csvContent],
+            {
+                type: "text/csv;charset=utf-8;"
+            }
+        );
+
+        const url =
+            URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+
+        link.download =
+            `Machine_Collection_Report_${reportDate}.csv`;
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+    }
+
+    addMachine();
+</script>
+
 </body>
 </html>
