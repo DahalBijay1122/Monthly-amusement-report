@@ -145,7 +145,7 @@
 
     <div class="total-section">
         Total Collection:
-        <span id="grandTotal">0</span>
+        <span id="grandTotal"></span>
     </div>
 
 </div>
@@ -200,11 +200,11 @@
                     value="0">
             </td>
 
-            <td class="current-start">0</td>
+            <td class="current-start"></td>
 
-            <td class="current-end">0</td>
+            <td class="current-end"></td>
 
-            <td class="collection">0</td>
+            <td class="collection"></td>
 
             <td>
                 <button
@@ -264,7 +264,7 @@
                     newEnd - oldEnd;
 
                 const collection =
-                    currentEnd - currentStart;
+                    - currentEnd + currentStart;
 
                 row.querySelector(".current-start")
                     .textContent = currentStart;
